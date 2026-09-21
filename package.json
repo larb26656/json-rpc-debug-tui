@@ -1,0 +1,32 @@
+{
+  "name": "json-rpc-debug-tui",
+  "version": "0.1.0",
+  "description": "Terminal UI debugger for newline-delimited JSON-RPC processes",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "json-rpc-debug-tui": "./src/main.tsx"
+  },
+  "keywords": [
+    "json-rpc",
+    "debugger",
+    "tui",
+    "terminal",
+    "ndjson"
+  ],
+  "scripts": {
+    "start": "bun run src/main.tsx",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ink": "^6.4.0",
+    "react": "^19.1.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.1.0",
+    "typescript": "^5.9.2"
+  }
+}
