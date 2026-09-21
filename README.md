@@ -7,6 +7,10 @@ and lets you send valid JSON messages interactively without mutating them.
 
 The TUI runs in the terminal's alternate screen, so it uses the full terminal viewport and restores the previous screen when it exits.
 
+## Screenshot
+
+![json-rpc-debug-tui terminal interface](docs/images/terminal-ui.png)
+
 ## Requirements
 
 - [Bun](https://bun.sh/) 1.2 or newer

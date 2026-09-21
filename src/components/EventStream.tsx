@@ -5,7 +5,6 @@ import { entryToLines, type RenderLine } from '../ui/render'
 
 export function EventStream() {
   const entries = useStore(state => state.entries)
-  const expanded = useStore(state => state.expanded)
   const showStderr = useStore(state => state.showStderr)
   const offset = useStore(state => state.offset)
   const { stdout } = useStdout()
@@ -25,10 +24,11 @@ export function EventStream() {
   const height = size.height || Math.max(3, (stdout.rows || 24) - 8)
   const lines = useMemo<RenderLine[]>(() => entries
     .filter(entry => showStderr || entry.kind !== 'stderr')
-    .flatMap(entry => entryToLines(entry, width - 2, Boolean(expanded[entry.key]))), [entries, expanded, showStderr, width])
+    .flatMap(entry => entryToLines(entry, width - 2)), [entries, showStderr, width])
 
   const start = Math.max(0, Math.min(Math.max(0, lines.length - height), lines.length - offset - height))
   const visible = lines.slice(start, start + height)
+  const visibleKeySignature = visible.map(line => line.key).join(',')
 
   useEffect(() => {
     const delta = lines.length - previousTotal.current
@@ -37,8 +37,9 @@ export function EventStream() {
     state.setTotal(lines.length)
     state.setVpH(height)
     state.setFirstVisible(lines[start]?.key ?? null)
+    state.setVisibleKeys(visible.map(line => line.key))
     if (delta > 0 && state.offset > 0) state.adjustOffset(delta)
-  }, [lines.length, start, height])
+  }, [lines.length, start, height, visibleKeySignature])
 
   return (
     <Box ref={ref} flexGrow={1} flexDirection="column" width="100%">

@@ -53,7 +53,6 @@ export function App({ options }: { options: ControllerOptions }) {
     if (key.ctrl && input === 'u') return state.scrollBy(page)
     if (input === 'g') return state.scrollTop()
     if (input === 'G') return state.scrollBottom()
-    if (input === 'e' && state.firstVisibleKey !== null) return state.toggleExpand(state.firstVisibleKey)
     if (input === 'f') return state.toggleStderr()
   })
 

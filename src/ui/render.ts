@@ -7,8 +7,6 @@ export interface RenderLine {
 }
 
 const parsedCache = new Map<number, { ok: boolean; value?: unknown }>()
-const collapseAt = 14
-const collapseShow = 10
 const maxBody = 2000
 
 const pad = (value: number) => String(value).padStart(2, '0')
@@ -34,11 +32,9 @@ function header(left: Seg[], right: Seg[], width: number): Seg[] {
   return right.length && gap >= 2 ? [...left, { text: ' '.repeat(gap) }, ...right] : left
 }
 
-function body(value: unknown, width: number, expanded: boolean): Seg[][] {
+function body(value: unknown, width: number): Seg[][] {
   let lines = (JSON.stringify(value, null, 2) ?? 'null').split('\n')
   if (lines.length > maxBody) lines = [...lines.slice(0, maxBody), '... truncated']
-  const hidden = lines.length - collapseShow
-  if (!expanded && lines.length > collapseAt) lines = [...lines.slice(0, collapseShow), `... +${hidden} lines (press e)`]
   return lines.flatMap(line => wrapSegs(tokenizeJsonLine(line), width))
 }
 
@@ -46,7 +42,7 @@ function wrapEntry(segments: Seg[], width: number, key: number): RenderLine[] {
   return wrapSegs(segments, width).map(segs => ({ key, segs }))
 }
 
-export function entryToLines(entry: Entry, width: number, expanded: boolean): RenderLine[] {
+export function entryToLines(entry: Entry, width: number): RenderLine[] {
   const safeWidth = Math.max(8, width)
   if (entry.kind === 'info') return wrapEntry([{ text: '✱ ', color: C.info }, { text: entry.raw, color: C.info }], safeWidth, entry.key)
   if (entry.kind === 'stderr') return wrapEntry([{ text: '  · ', color: C.stderr }, { text: entry.raw, color: C.stderr }], safeWidth, entry.key)
@@ -97,5 +93,5 @@ export function entryToLines(entry: Entry, width: number, expanded: boolean): Re
 
   const lines = wrapEntry(header(left, right, safeWidth), safeWidth, entry.key)
   if (bodyValue === undefined) return lines
-  return [...lines, ...body(bodyValue, safeWidth - 2, expanded).map(segs => ({ key: entry.key, segs: [{ text: '  ' }, ...segs] }))]
+  return [...lines, ...body(bodyValue, safeWidth - 2).map(segs => ({ key: entry.key, segs: [{ text: '  ' }, ...segs] }))]
 }

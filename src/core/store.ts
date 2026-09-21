@@ -20,13 +20,13 @@ const endOf = (line: string) => [...line].length
 
 export interface Store {
   entries: Entry[]
-  expanded: Record<number, boolean>
   showStderr: boolean
   offset: number
   mode: Mode
   vpH: number
   totalLines: number
   firstVisibleKey: number | null
+  visibleKeys: number[]
   lines: string[]
   cursor: { row: number; col: number }
   history: string[]
@@ -41,13 +41,13 @@ export interface Store {
   push: (entry: Entry) => void
   flush: () => void
   clearEntries: () => void
-  toggleExpand: (key: number) => void
   toggleStderr: () => void
   setMode: (mode: Mode) => void
   toggleMode: () => void
   setVpH: (height: number) => void
   setTotal: (total: number) => void
   setFirstVisible: (key: number | null) => void
+  setVisibleKeys: (keys: number[]) => void
   adjustOffset: (delta: number) => void
   scrollBy: (delta: number) => void
   scrollTop: () => void
@@ -71,13 +71,13 @@ export interface Store {
 
 const initial = {
   entries: [],
-  expanded: {},
   showStderr: true,
   offset: 0,
   mode: 'input' as Mode,
   vpH: 0,
   totalLines: 0,
   firstVisibleKey: null,
+  visibleKeys: [],
   lines: [''],
   cursor: { row: 0, col: 0 },
   history: [],
@@ -101,15 +101,19 @@ export const useStore = create<Store>()((set, get) => ({
   },
   clearEntries: () => {
     pending.length = 0
-    set({ entries: [], expanded: {}, totalLines: 0, firstVisibleKey: null })
+    set({ entries: [], totalLines: 0, firstVisibleKey: null })
   },
-  toggleExpand: key => set(state => ({ expanded: { ...state.expanded, [key]: !state.expanded[key] } })),
   toggleStderr: () => set(state => ({ showStderr: !state.showStderr })),
   setMode: mode => set({ mode }),
   toggleMode: () => set(state => ({ mode: state.mode === 'input' ? 'view' : 'input' })),
   setVpH: vpH => set(state => (state.vpH === vpH ? state : { vpH })),
   setTotal: totalLines => set(state => (state.totalLines === totalLines ? state : { totalLines })),
   setFirstVisible: firstVisibleKey => set(state => (state.firstVisibleKey === firstVisibleKey ? state : { firstVisibleKey })),
+  setVisibleKeys: visibleKeys => set(state => (
+    state.visibleKeys.length === visibleKeys.length && state.visibleKeys.every((key, index) => key === visibleKeys[index])
+      ? state
+      : { visibleKeys }
+  )),
   adjustOffset: delta => set(state => ({ offset: Math.max(0, state.offset + delta) })),
   scrollBy: delta => set(state => ({ offset: clamp(state.offset + delta, 0, Math.max(0, state.totalLines - 1)) })),
   scrollTop: () => set(state => ({ offset: Math.max(0, state.totalLines - 1) })),
