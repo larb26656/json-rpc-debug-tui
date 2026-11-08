@@ -1,12 +1,14 @@
 import { Box, Text, useInput } from "ink";
 import { useStore } from "../core/store";
-import { parseJsonSafe } from "../ui/json";
+import { parseJsonSafe, strWidth } from "../ui/json";
 
-function CursorLine({ line, col }: { line: string; col: number }) {
+function CursorLine({ line, col, width }: { line: string; col: number; width: number }) {
   const chars = [...line];
+  let start = 0;
+  while (start < col && strWidth(chars.slice(start, col).join("")) >= width) start++;
   return (
     <Text>
-      {chars.slice(0, col).join("")}
+      {chars.slice(start, col).join("")}
       <Text inverse bold>
         {chars[col] ?? " "}
       </Text>
@@ -16,9 +18,11 @@ function CursorLine({ line, col }: { line: string; col: number }) {
 }
 
 export function InputBox({
-  onSend,
+  onSend, maxHeight, width,
 }: {
   onSend: (text: string) => void;
+  maxHeight: number;
+  width: number;
 }) {
   const mode = useStore((state) => state.mode);
   const lines = useStore((state) => state.lines);
@@ -63,8 +67,9 @@ export function InputBox({
 
   const text = lines.join("\n");
   const valid = Boolean(text.trim()) && parseJsonSafe(text).ok;
-  const first = Math.max(0, cursor.row - 10);
-  const shown = lines.slice(first, first + 12);
+  const rowCount = Math.max(1, Math.min(12, maxHeight - 4 - (!text ? 1 : 0)));
+  const first = Math.max(0, Math.min(cursor.row, lines.length - rowCount, cursor.row - rowCount + 1));
+  const shown = lines.slice(first, first + rowCount);
 
   return (
     <Box
@@ -72,14 +77,16 @@ export function InputBox({
       borderColor={mode === "input" ? "#7aa2f7" : "#565f89"}
       flexDirection="column"
       paddingX={1}
+      flexShrink={0}
+      overflow="hidden"
     >
-      {first > 0 && <Text color="#565f89"> ... {first} lines above</Text>}
+      {first > 0 && <Text color="#565f89" wrap="truncate-end"> ... {first} lines above</Text>}
       {shown.map((line, index) => {
         const row = first + index;
         return (
-          <Text key={row}>
+          <Text key={row} wrap="truncate-end">
             {row === cursor.row ? (
-              <CursorLine line={line} col={cursor.col} />
+              <CursorLine line={line} col={cursor.col} width={width - 4} />
             ) : (
               line
             )}
@@ -87,19 +94,19 @@ export function InputBox({
         );
       })}
       {!text && (
-        <Text color="#565f89">
+        <Text color="#565f89" wrap="truncate-end">
           {" "}
           type JSON, for example:{" "}
           {'{"jsonrpc":"2.0","id":1,"method":"initialize"}'}
         </Text>
       )}
-      <Box justifyContent="space-between">
-        <Text color={valid ? "#9ece6a" : "#565f89"}>
+      <Box height={1} overflow="hidden" justifyContent="space-between">
+        <Text wrap="truncate-end" color={valid ? "#9ece6a" : "#565f89"}>
           {valid
             ? "✓ valid JSON - enter to send"
             : "· incomplete JSON - enter for newline"}
         </Text>
-        <Text color="#565f89">
+        <Text wrap="truncate-end" color="#565f89">
           {histIdx === null
             ? "tab: view"
             : `history ${histIdx + 1}/${history.length}`}

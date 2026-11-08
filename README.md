@@ -5,7 +5,7 @@ Terminal UI debugger for newline-delimited JSON-RPC processes such as ACP agents
 `json-rpc-debug-tui` runs a child process, displays its JSON-RPC traffic in real time,
 and lets you send valid JSON messages interactively without mutating them.
 
-The TUI runs in the terminal's alternate screen, so it uses the full terminal viewport and restores the previous screen when it exits.
+The TUI runs in the terminal's alternate screen, fills the viewport, adapts when the terminal is resized, and restores the previous screen when it exits. If the terminal is smaller than 40 columns by 9 rows, enlarge it to continue.
 
 ## Screenshot
 

@@ -17,7 +17,7 @@ export function StatusBar() {
   const offset = useStore(state => state.offset)
 
   return (
-    <Box justifyContent="space-between" width="100%">
+    <Box justifyContent="space-between" width="100%" height={1} overflow="hidden" flexShrink={0}>
       <Box gap={1}>
         <Text bold color="#7aa2f7">json-rpc-debug-tui</Text>
         <Text bold color={mode === 'input' ? '#7aa2f7' : '#e0af68'}>[{mode === 'input' ? 'INPUT' : 'VIEW '}]</Text>

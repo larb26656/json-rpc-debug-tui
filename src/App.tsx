@@ -1,5 +1,5 @@
-import { Box, useApp, useInput } from 'ink'
-import { useEffect, useRef } from 'react'
+import { Box, Text, useApp, useInput, useStdout } from 'ink'
+import { useEffect, useRef, useState } from 'react'
 import { createController, type ControllerOptions } from './core/controller'
 import { useStore } from './core/store'
 import { EventStream } from './components/EventStream'
@@ -11,6 +11,15 @@ import { parseJsonSafe } from './ui/json'
 export function App({ options }: { options: ControllerOptions }) {
   const controller = useRef<ReturnType<typeof createController> | null>(null)
   const { exit } = useApp()
+  const { stdout } = useStdout()
+  const [size, setSize] = useState(() => ({ columns: stdout.columns || 80, rows: stdout.rows || 24 }))
+
+  useEffect(() => {
+    const resize = () => setSize({ columns: stdout.columns || 80, rows: stdout.rows || 24 })
+    stdout.on('resize', resize)
+    resize()
+    return () => { stdout.off('resize', resize) }
+  }, [stdout])
 
   useEffect(() => {
     const instance = createController(options)
@@ -67,11 +76,15 @@ export function App({ options }: { options: ControllerOptions }) {
   }
 
   return (
-    <Box flexDirection="column" height="100%" width="100%">
-      <StatusBar />
-      <EventStream />
-      <InputBox onSend={send} />
-      <HelpLine />
+    <Box flexDirection="column" height={size.rows} width={size.columns} overflow="hidden">
+      {size.columns < 40 || size.rows < 9
+        ? <Text wrap="truncate-end">Terminal too small; resize to at least 40 x 9.</Text>
+        : <>
+          <StatusBar />
+          <EventStream columns={size.columns} rows={size.rows} />
+          <InputBox onSend={send} maxHeight={size.rows - 4} width={size.columns} />
+          <HelpLine />
+        </>}
     </Box>
   )
 }
