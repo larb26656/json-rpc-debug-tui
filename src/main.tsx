@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 import { render } from 'ink'
-import { appendFileSync } from 'node:fs'
 import { App } from './App'
 import { CommandPrompt } from './components/CommandPrompt'
 import type { ControllerOptions } from './core/controller'
@@ -80,9 +79,6 @@ function renderFullscreen(node: Parameters<typeof render>[0], exitOnCtrlC: boole
 
 function start(options: CliOptions, command: string[]): void {
   const finalCommand = options.shell ? ['/bin/sh', '-c', command.join(' ')] : command
-  if (options.logFile) {
-    try { appendFileSync(options.logFile, '') } catch { /* controller reports wire errors through the TUI */ }
-  }
   try {
     renderFullscreen(<App options={{ ...options, cmd: finalCommand }} />, false)
   } catch (error) {

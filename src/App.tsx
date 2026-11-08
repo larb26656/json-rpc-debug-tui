@@ -24,7 +24,6 @@ export function App({ options }: { options: ControllerOptions }) {
   useEffect(() => {
     const instance = createController(options)
     controller.current = instance
-    if (options.logFile) useStore.getState().push({ key: 0, ts: Date.now(), kind: 'info', raw: `passive log -> ${options.logFile}` })
     instance.start()
     const flushTimer = setInterval(() => useStore.getState().flush(), 16)
     const cleanup = () => instance.kill()

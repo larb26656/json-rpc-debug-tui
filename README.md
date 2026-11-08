@@ -36,7 +36,7 @@ bun run src/main.tsx --shell 'opencode acp'
 
 - `--cwd <path>`: set the child process working directory.
 - `--env KEY=VALUE`: add an environment variable. Repeatable.
-- `--log <file>`: append all wire messages to a file.
+- `--log <file>`: append wire messages as NDJSON. Each row contains `ts`, `dir`, and `raw`; valid JSON in `raw` is stored as a JSON value, and non-JSON data as `{ "text": "..." }`. Missing parent directories are created; failures are shown in the event stream without stopping the session. Relative paths are resolved from the TUI's working directory.
 - `--shell`: run the command through `/bin/sh -c`.
 - `-h`, `--help`: show the command help.
 

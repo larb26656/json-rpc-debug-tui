@@ -1,4 +1,5 @@
-import { appendFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { RpcConnection } from './connection'
 import { allocEntryKey, useStore, type Entry } from './store'
 
@@ -19,13 +20,29 @@ export function createController(options: ControllerOptions) {
   const push = (entry: any) => {
     useStore.getState().push({ ...entry, key: allocEntryKey(), ts: now() } as Entry)
   }
+  let logError: string | null = null
+  if (options.logFile) {
+    try {
+      mkdirSync(dirname(options.logFile), { recursive: true })
+      appendFileSync(options.logFile, '')
+      push({ kind: 'info', raw: `passive log -> ${options.logFile}` })
+    } catch (error) {
+      logError = String(error)
+      push({ kind: 'info', raw: `log failed (${options.logFile}): ${logError}` })
+    }
+  }
 
   const log = (dir: string, raw: string) => {
     if (!options.logFile) return
     try {
-      appendFileSync(options.logFile, `${JSON.stringify({ ts: now(), dir, raw })}\n`)
-    } catch {
-      // Logging must never interrupt the debug session.
+      let value: unknown
+      try { value = JSON.parse(raw) } catch { value = { text: raw } }
+      appendFileSync(options.logFile, `${JSON.stringify({ ts: now(), dir, raw: value })}\n`)
+      logError = null
+    } catch (error) {
+      const message = String(error)
+      if (message !== logError) push({ kind: 'info', raw: `log failed (${options.logFile}): ${message}` })
+      logError = message
     }
   }
 
